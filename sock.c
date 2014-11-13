@@ -18,6 +18,7 @@ int prepare_socket(int portnum)
 
 	printf("#Bereite Socket vor...\n");
 	if((serversocket=socket(AF_INET, SOCK_STREAM, 0)) < 0){
+		printf("Fehler beim erstellen des serversockets.\n");
 		return 1;
 	}
 
@@ -52,26 +53,28 @@ int manage_connections(int anzverbindungen, int (*managerfunction) (FILE * datas
 
 	printf("#Lauschen\n");
 	int i;
-	for( i=0 ; i < anzverbindungen; i++) {
-	//Eine neue Verbindung!
-	addrlen = sizeof( struct sockaddr_in );
-	if( (newsock = accept(serversocket,(struct sockaddr *) &client_addr, (socklen_t*) &addrlen)) < 0)
+	for(i=0; i < anzverbindungen; i++){
+		//Eine neue Verbindung!
+		addrlen = sizeof( struct sockaddr_in );
+		if((newsock = accept(serversocket,(struct sockaddr *) &client_addr, (socklen_t*) &addrlen)) < 0){  
 	{  
-		break;
-	};
+			break;
+		}
 
-	printf("\n# Neue Verbindung erkannt:\n");
+		printf("\n# Neue Verbindung erkannt:\n");
 
-	FILE *datastream;
-	if(!(datastream = fdopen(newsock, "a+"))){
-		printf("#Fehler in fdopen().\n");
-		close(newsock);
-		return 1;
-	}
+		FILE *datastream;
 
-	manager(datastream, inet_ntoa(client.sin_addr));
-    fclose(datastream);
-    close(newsock);
+		if(!(datastream = fdopen(newsock, "a+"))){
+			printf("#Fehler in fdopen().\n");
+			close(newsock);
+			return 1;
+		}
+
+		manager(datastream, inet_ntoa(client.sin_addr));
+	    
+	    fclose(datastream);
+	    close(newsock);
 	}
 	return anzverbindungen;
 }
