@@ -26,6 +26,13 @@ int prepare_socket(int portnum)
 	server.sin_port = htons(portnum);
 	server.sin_addr.s_addr = INADDR_ANY;
 
+	int yes = 1;
+	
+	if(setsockopt(serversocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+    	perror("setsockopt");
+    	exit(1);
+	}
+
 	if(bind(serversocket, (struct sockaddr *) &server, sizeof(struct sockaddr_in)) < 0)
 	{
 		return 1;
